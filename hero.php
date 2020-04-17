@@ -14,27 +14,37 @@ INNER JOIN abilities
 ON ability_hero.ability_id=abilities.id
 WHERE ability_hero.hero_id = " . $id;
 
+
 $sql3 = "SELECT * 
 FROM relationships  
 INNER JOIN heroes 
 ON relationships.hero2_id=heroes.id
-WHERE relationships.hero1_id =" . $id;
+WHERE relationships.hero1_id = $id
+AND type_id = '1'";
 
-
+$sql4 = "SELECT * 
+FROM relationships  
+INNER JOIN heroes 
+ON relationships.hero2_id=heroes.id
+WHERE relationships.hero1_id = $id
+AND type_id = '2'";
 
 
 $result = $conn->query($sql);
 $result2 = $conn->query($sql2);
 $result3 = $conn->query($sql3);
+$result4 = $conn->query($sql4);
+
 
 
 
 $bio ='';
 $freinds='';
+$enemies='';
 $ability='';
 $navbar = 
     '<nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">HeroBook</a>
+        <a class="navbar-brand" href="index.php">HeroBook</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
@@ -44,7 +54,7 @@ $navbar =
                     <a class="nav-link" href="index.php">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Info</a>
+                    <a class="nav-link" href="index.php/#Create">Create Hero</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Setting</a>
@@ -64,12 +74,11 @@ if ($result->num_rows > 0) {
     //loops through all heros
     while ($herorow = $result->fetch_assoc()) {
         $bio = 
-            "<div class = 'col-5 ml-1'>
-                <a class='btn btn-primary mt-3' href='index.php'> Back </a>
+            "<div class = 'col-5 pl-4 pt-3'>
+                <h2 class='text-center'> $herorow[name] </h2>
                 <br></br>
-                <img src='$herorow[image_url]' class='card-image ml-5' alt='profile pic' style='height: 14rem; width: 14rem;'>
+                <img src='$herorow[image_url]' class='bg-white rounded-circle ml-3' alt='profile pic' style='height: 14rem; width: 14rem;'>
                 <br></br>
-                <h3> $herorow[name] </h3>
                 <p> $herorow[biography] </p>
                 <br></br>
             </div>";
@@ -77,10 +86,10 @@ if ($result->num_rows > 0) {
 
     while($abilityrow = $result2->fetch_assoc()){
         $ability = 
-            "<div class = 'col-5 ml-1'>
-                <h3> SuperPower</h3>
+            "<div class = 'col-5 ml-5 mt-3'>
+                <h2 class='text-center'> Abilities </h2>
                 <br></br>
-                <h3> $abilityrow[ability] </h3>
+                <h4> SuperPower: $abilityrow[ability] </h4>
             </div>";
     }
 
@@ -91,31 +100,57 @@ if ($result->num_rows > 0) {
                 <div class="card m-2 bg-light" style="height: 27rem; width: 15rem;">
                     <div class="card-body">
                         <h5 class="card-title">' . $relationrow["name"] . '</h5>
+                        <img src=' . $relationrow["image_url"] .' class="" alt="profile pic" style="height: 12rem; width: 12rem;">
+                        <p class="card-text my-3">' . $relationrow["about_me"] . '</p>
+                        <a href=' . $hero . ' class="btn btn-primary">About me</a>
+                        <a href="data.php?method=DelFriend&hero2_id=' . $relationrow[id] . '&hero1_id=' .$id .'" class="btn btn-danger">Delete</a>
+                    </div>
+                 </div>
+            </div>';
+    }
+
+    while($relationrow = $result4->fetch_assoc()){
+        $hero = "hero.php?id=" . $relationrow["id"];
+        $enemies .= 
+            '<div class="col-3 text-dark">
+                <div class="card m-2 bg-light" style="height: 27rem; width: 15rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">' . $relationrow["name"] . '</h5>
                         <img src=' . $relationrow["image_url"] .' class="card-image" alt="profile pic" style="height: 12rem; width: 12rem;">
                         <p class="card-text my-3">' . $relationrow["about_me"] . '</p>
                         <a href=' . $hero . ' class="btn btn-primary">About me</a>
+                        <a href="data.php?method=BeFriend&hero2_id=' . $relationrow[id] . '&hero1_id=' .$id .'" class="btn btn-success">BeFriend</a>
                     </div>
                  </div>
             </div>';
     }
 } 
 
+
 else {
     echo "0 results";
 }
-
+            // <a class='btn btn-primary' href='index.php'> Back </a>
 $render = 
     "<div>
         $navbar
         <div class='container bg-dark text-white' style='height: 100%'>
-            <div class='row'>
-            $bio
-            $ability
+            <div class='row p-3'>
+                <h2 class='text-center'>PROFILE</h2>
             </div>
-            <h3 class='text-center'> Friends </h3>
+            <div class='row'>
+                $bio
+                $ability
+            </div>
+            <h3 class='text-center text-success'> Friends </h3>
             <br></br>
             <div class='row'>
-            $friends
+                $friends
+            </div>
+            <h3 class='text-center text-danger'> Enemies </h3>
+            <br></br>
+            <div class='row'>
+                $enemies
             </div>
         </div>
     </div>";
